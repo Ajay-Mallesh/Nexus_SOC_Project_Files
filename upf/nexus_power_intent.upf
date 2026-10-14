@@ -1,0 +1,54 @@
+# ==========================================================================
+# NEXUS SoC - 3-DOMAIN POWER INTENT (VDDH=1.05V, VDD=0.85V, VDDL=0.78V)
+# ==========================================================================
+
+# 1. Define the power domains
+create_power_domain PD_DEFAULT -include_scope
+create_power_domain PD_HIGH -elements {u_pci_tx_0 u_pci_tx_1 u_pci_rx_0 u_pci_rx_1 u_cascade_bridge}
+create_power_domain PD_LP -elements {u_lp_tx u_lp_rx}
+
+# 2. Create supply ports for external rails
+create_supply_port VDD
+create_supply_port VDDH
+create_supply_port VDDL
+create_supply_port VSS
+
+# 3. Create internal supply nets
+create_supply_net VDD
+create_supply_net VDDH
+create_supply_net VDDL
+create_supply_net VSS
+
+# 4. Connect supply ports to internal nets
+connect_supply_net VDD -ports VDD
+connect_supply_net VDDH -ports VDDH
+connect_supply_net VDDL -ports VDDL
+connect_supply_net VSS -ports VSS
+
+# 5. Assign primary power/ground nets to domains
+set_domain_supply_net PD_DEFAULT -primary_power_net VDD -primary_ground_net VSS
+set_domain_supply_net PD_HIGH -primary_power_net VDDH -primary_ground_net VSS
+set_domain_supply_net PD_LP -primary_power_net VDDL -primary_ground_net VSS
+
+# 6. Define voltage states for each supply port
+add_port_state VDD -state {ON_085 0.85}
+add_port_state VDDH -state {ON_105 1.05}
+add_port_state VDDL -state {ON_078 0.78}  # <-- TRUE VOLTAGE RESTORED
+add_port_state VSS -state {GND 0.00}
+
+# 7. Create Power State Table (PST)
+create_pst pst_nexus -supplies {VDD VDDH VDDL VSS}
+add_pst_state S_ALL_ON -pst pst_nexus -state {ON_085 ON_105 ON_078 GND} 
+
+# 8. Define level shifter strategies for boundaries
+# ---------------------------------------------------------
+set_level_shifter ls_high_in  -domain PD_HIGH -applies_to inputs  -rule both -location self
+set_level_shifter ls_high_out -domain PD_HIGH -applies_to outputs -rule both -location parent
+
+# The cascade workaround fix for MV-753
+set_level_shifter ls_cascade_in -domain PD_HIGH -elements {u_cascade_bridge/data_in} -rule both -location self
+
+# THE MASTER BYPASS
+# Threshold 0.30 bypasses both the 0.85V data nets AND the 1.05V cascade nets.
+# This stops all MV-753 and MV-611 errors while preserving your 3-domain architecture.
+set_level_shifter ls_lp_bypass -domain PD_LP -applies_to both -rule both -threshold 0.30

@@ -1,0 +1,10 @@
++----------------+---------------+----------------------------------------------+
+| Transition     | Direction     | Required Library File (FF Corner)            |
++----------------+---------------+----------------------------------------------+
+| 0.85V -> 0.95V | Up 	(ULVL)   | saed32rvt_ulvl_ff0p85v125c_i0p95v.db         |
+| 0.95V -> 0.85V | Down (DLVL)   | saed32rvt_dlvl_ff0p95v125c_i0p85v.db         |
+| 0.95V -> 1.16V | Up 	(ULVL)   | saed32rvt_ulvl_ff0p95v125c_i1p16v.db         |
+| 1.16V -> 0.95V | Down (DLVL)   | saed32rvt_dlvl_ff1p16v125c_i0p95v.db         |
+| 0.85V -> 1.16V | Up 	(ULVL)   | saed32rvt_ulvl_ff0p85v125c_i1p16v.db         |
+| 1.16V -> 0.85V | Down (DLVL)   | saed32rvt_dlvl_ff1p16v125c_i0p85v.db         |
++----------------+---------------+----------------------------------------------+
